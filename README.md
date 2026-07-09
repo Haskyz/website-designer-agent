@@ -21,6 +21,21 @@ AI coding agents are good at code, but frontend pages often need real visual ass
 ## Install
 
 ```bash
+npm install -g website-designer-agent
+wda --help
+```
+
+Or run it without installing anything:
+
+```bash
+npx website-designer-agent gen background --desc "warm cozy desk login background, right side empty for a form" --out ./demo/login-bg.webp --provider mock
+```
+
+### Building from source (contributors)
+
+```bash
+git clone https://github.com/Haskyz/website-designer-agent.git
+cd website-designer-agent
 pnpm install
 pnpm build
 ```
@@ -29,12 +44,6 @@ During development, run the CLI through `pnpm dev`:
 
 ```bash
 pnpm dev -- gen background --desc "warm cozy desk login background, right side empty for a form" --out ./demo/login-bg.webp --provider mock
-```
-
-After build:
-
-```bash
-node dist/cli.js gen background --desc "warm cozy desk login background, right side empty for a form" --out ./demo/login-bg.webp --provider mock
 ```
 
 ## Providers
@@ -144,16 +153,42 @@ src/assets/generated/login-bg.meta.json
 
 The sidecar files are for traceability and let an agent regenerate/edit without re-deriving context. They are not a scoring or asset-selection system.
 
-## Agent Skills
+## Agent Skills — teach your AI coding agent to use `wda`
 
-The repository includes ready-to-use agent instructions:
+Installing the CLI is not enough by itself: your agent also needs to be told *when* to reach for `wda` instead of hand-drawing visuals in code. The repository ships ready-to-use instruction files for that:
 
 ```text
-skills/codex/SKILL.md
 skills/claude/SKILL.md
+skills/codex/SKILL.md
 ```
 
-Their core rule is simple: when a frontend page needs a real visual asset, call `wda` instead of hand-drawing complex visuals in code, and prefer `regen`/`edit` over throwaway re-generation once an asset already exists.
+Their core rule is simple: when a frontend page needs a real visual asset, call `wda` instead of writing CSS/SVG/Canvas by hand, and prefer `regen`/`edit` over throwaway re-generation once an asset already exists.
+
+### Claude Code
+
+Claude Code auto-loads any `SKILL.md` placed under `.claude/skills/<name>/`. Add it to one project:
+
+```bash
+mkdir -p .claude/skills/wda
+curl -fsSL https://raw.githubusercontent.com/Haskyz/website-designer-agent/main/skills/claude/SKILL.md \
+  -o .claude/skills/wda/SKILL.md
+```
+
+Or make it available in every project by using your home directory instead: `~/.claude/skills/wda/SKILL.md`.
+
+### Codex
+
+Codex CLI reads `AGENTS.md` at the repository root automatically. If you don't have one yet, this creates it; otherwise it appends to your existing instructions:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Haskyz/website-designer-agent/main/skills/codex/SKILL.md >> AGENTS.md
+```
+
+(If your Codex version supports a dedicated skills directory, you can use that instead — check `codex --help` for your version.)
+
+### Cursor and other agents
+
+Point the agent at `skills/claude/SKILL.md` (the instructions are agent-agnostic) — paste it into whatever project-instructions mechanism that tool uses (e.g. `.cursor/rules`).
 
 ## Test
 
